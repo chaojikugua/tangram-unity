@@ -16,6 +16,7 @@ namespace Mapzen.Unity
         private bool ready;
         private SceneGroup.Type groupOptions;
         private float inverseTileScale;
+        private float regionScaleRatio;
         private Matrix4x4 transform;
 
         public TileTask(TileAddress address, SceneGroup.Type groupOptions, byte[] response, float offsetX, float offsetY, float regionScaleRatio)
@@ -25,6 +26,7 @@ namespace Mapzen.Unity
             this.ready = false;
             this.groupOptions = groupOptions;
             this.inverseTileScale = 1.0f / (float)address.GetSizeMercatorMeters();
+            this.regionScaleRatio = regionScaleRatio;
 
             float scaleRatio = (float)address.GetSizeMercatorMeters() * regionScaleRatio;
             Matrix4x4 scale = Matrix4x4.Scale(new Vector3(scaleRatio, scaleRatio, scaleRatio));
@@ -42,6 +44,8 @@ namespace Mapzen.Unity
             SceneGroup leaf = root;
 
             var tileGroup = OnSceneGroupData(SceneGroup.Type.Tile, address.ToString(), root, ref leaf);
+
+            float epsilon = regionScaleRatio / 100.0f;
 
             foreach (var style in featureStyling)
             {
@@ -71,7 +75,7 @@ namespace Mapzen.Unity
 
                             if (feature.Type == GeometryType.Polygon || feature.Type == GeometryType.MultiPolygon)
                             {
-                                var polygonOptions = layerStyle.GetPolygonOptions(feature, inverseTileScale);
+                                var polygonOptions = layerStyle.GetPolygonOptions(feature, inverseTileScale, epsilon);
 
                                 if (polygonOptions.Enabled)
                                 {
@@ -82,7 +86,7 @@ namespace Mapzen.Unity
 
                             if (feature.Type == GeometryType.LineString || feature.Type == GeometryType.MultiLineString)
                             {
-                                var polylineOptions = layerStyle.GetPolylineOptions(feature, inverseTileScale);
+                                var polylineOptions = layerStyle.GetPolylineOptions(feature, inverseTileScale, epsilon);
 
                                 if (polylineOptions.Enabled)
                                 {
