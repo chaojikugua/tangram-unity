@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 using Mapzen;
+using Mapzen.Unity;
 using UnityEditor;
 
 [CustomEditor(typeof(MapzenMap))]
@@ -9,6 +10,7 @@ public class MapzenMapEditor : Editor
 {
     private MapzenMap mapzenMap;
     private bool showTileDataFoldout = false;
+
 
     void OnEnable()
     {
@@ -41,6 +43,19 @@ public class MapzenMapEditor : Editor
             {
                 LogErrors();
             }
+        }
+
+        EditorConfig.ResetColor();
+
+        valid = mapzenMap.MeshFilters.Count > 0;
+
+        EditorConfig.SetColor(valid ?
+            EditorConfig.ExportButtonEnabledColor :
+            EditorConfig.ExportButtonDisabledColor);
+
+        if (GUILayout.Button("Export to OBJ"))
+        {
+            ModelExporter.OBJ(mapzenMap.MeshFilters, mapzenMap.RegionName);
         }
 
         EditorConfig.ResetColor();
